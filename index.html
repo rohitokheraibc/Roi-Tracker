@@ -147,6 +147,13 @@ code{font-family:'DM Mono',monospace;background:var(--bg2);padding:1px 5px;borde
 .kpi:nth-child(1){animation-delay:.04s}.kpi:nth-child(2){animation-delay:.08s}.kpi:nth-child(3){animation-delay:.12s}.kpi:nth-child(4){animation-delay:.16s}
 .kpi:nth-child(5){animation-delay:.20s}.kpi:nth-child(6){animation-delay:.24s}.kpi:nth-child(7){animation-delay:.28s}.kpi:nth-child(8){animation-delay:.32s}
 ::-webkit-scrollbar{width:5px}::-webkit-scrollbar-thumb{background:var(--bg3);border-radius:100px}
+.sidebar{transition:transform .25s ease, width .25s ease}
+.sidebar.collapsed{transform:translateX(-220px)}
+.main{transition:margin-left .25s ease}
+.main.expanded{margin-left:0}
+.toggle-btn{position:fixed;top:16px;left:16px;z-index:200;width:34px;height:34px;border-radius:var(--r);background:var(--white);border:1px solid var(--border2);cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:var(--shadow);transition:left .25s ease;font-size:16px;color:var(--ink2)}
+.toggle-btn:hover{background:var(--bg);color:var(--ink)}
+.toggle-btn.shift{left:232px}
 </style>
 </head>
 <body>
@@ -183,8 +190,11 @@ code{font-family:'DM Mono',monospace;background:var(--bg2);padding:1px 5px;borde
 <!-- ═══ MAIN APP ══════════════════════════════════════════════ -->
 <div id="app" class="shell" style="display:none">
 
+  <!-- Sidebar toggle -->
+  <button class="toggle-btn shift" id="sidebar-toggle" onclick="toggleSidebar()" title="Toggle sidebar">☰</button>
+
   <!-- Sidebar -->
-  <aside class="sidebar">
+  <aside class="sidebar" id="sidebar">
     <div class="logo">
       <div class="logo-mark"><span class="logo-dot"></span>ROI Tracker</div>
       <div class="logo-sub">Personal DMT Dashboard</div>
@@ -226,7 +236,7 @@ code{font-family:'DM Mono',monospace;background:var(--bg2);padding:1px 5px;borde
   </aside>
 
   <!-- Main content -->
-  <main class="main">
+  <main class="main" id="main-content">
 
     <!-- Loading overlay -->
     <div id="loading-overlay" class="loading-screen">
@@ -926,6 +936,18 @@ function addProdRow() {
   renderSettings();
 }
 
+// ─── Sidebar toggle ───────────────────────────────────────────
+function toggleSidebar() {
+  const sidebar = document.getElementById('sidebar');
+  const main    = document.getElementById('main-content');
+  const btn     = document.getElementById('sidebar-toggle');
+  const isCollapsed = sidebar.classList.toggle('collapsed');
+  if (main) main.classList.toggle('expanded', isCollapsed);
+  btn.classList.toggle('shift', !isCollapsed);
+  btn.textContent = isCollapsed ? '☰' : '✕';
+  localStorage.setItem('sidebar_collapsed', isCollapsed);
+}
+
 // ─── Defaults ─────────────────────────────────────────────────
 function setDefaultDates() {
   // Use local date, NOT toISOString() which returns UTC and shifts date in IST timezone
@@ -941,6 +963,16 @@ function setDefaultDates() {
 // ─── Init ─────────────────────────────────────────────────────
 const savedUrl = localStorage.getItem('roi_tracker_url');
 if (savedUrl) { SCRIPT_URL=savedUrl; startApp(); }
+
+// Restore sidebar collapsed state
+if (localStorage.getItem('sidebar_collapsed') === 'true') {
+  const sb = document.getElementById('sidebar');
+  const mn = document.getElementById('main-content');
+  const tb = document.getElementById('sidebar-toggle');
+  if (sb) sb.classList.add('collapsed');
+  if (mn) mn.classList.add('expanded');
+  if (tb) { tb.classList.remove('shift'); tb.textContent = '☰'; }
+}
 </script>
 </body>
 </html>
